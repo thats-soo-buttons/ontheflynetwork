@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tab System Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 20px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      margin: 5px;
+      background: #333;
+      color: #fff;
+      border: 2px solid #00f5ff;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #00f5ff;
+      color: #000;
+    }
+    .tab-section {
+      display: none;
+      padding: 20px;
+      margin-top: 20px;
+      border: 2px solid #00f5ff;
+      min-height: 300px;
+    }
+    .tab-section.active {
+      display: block;
+    }
+    #tv-experience {
+      background: #2a2a2a;
+      padding: 20px;
+      border: 3px solid #00f5ff;
+      min-height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tab System Test</h1>
+  
+  <nav>
+    <button class="tab-btn active" data-tab="mission">Mission</button>
+    <button class="tab-btn" data-tab="tv">TV</button>
+    <button class="tab-btn" data-tab="support">Support</button>
+  </nav>
+
+  <div id="section-mission" class="tab-section active">
+    <h2>Mission Section</h2>
+    <p>This is the mission content. It should be visible by default.</p>
+  </div>
+
+  <div id="section-tv" class="tab-section">
+    <h2>TV Section</h2>
+    <div id="tv-experience">
+      <h3>TV Container</h3>
+      <p>This is the TV experience. It should appear when you click the TV tab.</p>
+      <p>TV Width: Full container</p>
+      <p>TV Height: 400px minimum</p>
+    </div>
+  </div>
+
+  <div id="section-support" class="tab-section">
+    <h2>Support Section</h2>
+    <p>This is the support content.</p>
+  </div>
+
+  <script>
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabSections = {
+      mission: document.getElementById('section-mission'),
+      tv: document.getElementById('section-tv'),
+      support: document.getElementById('section-support'),
+    };
+
+    console.log('Tabs initialized:', Object.keys(tabSections));
+    console.log('Tab buttons found:', tabButtons.length);
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        console.log('Clicked tab:', target);
+        
+        Object.keys(tabSections).forEach((key) => {
+          const shouldBeActive = key === target;
+          tabSections[key].classList.toggle('active', shouldBeActive);
+          console.log(`Tab ${key}: ${shouldBeActive ? 'ACTIVE' : 'hidden'}`);
+        });
+        
+        tabButtons.forEach((b) => b.classList.toggle('active', b === btn));
+      });
+    });
+  </script>
+</body>
+</html>

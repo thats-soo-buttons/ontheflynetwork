@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTF TV</title>
+  <script src="https://embed.twitch.tv/embed/v1.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Oxanium:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #08090f;
+      --panel: #0f1220;
+      --glass: #0d1224;
+      --edge: #1c2240;
+      --cyan: #3ff2ff;
+      --pink: #ff4fd8;
+      --amber: #f6d365;
+      --text: #e9edff;
+      --muted: #9aa4c0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 79, 216, 0.08), transparent 35%),
+        radial-gradient(circle at 80% 10%, rgba(63, 242, 255, 0.08), transparent 30%),
+        linear-gradient(145deg, #06070f 0%, #0a0d16 40%, #05060c 100%);
+      color: var(--text);
+      font-family: "Space Grotesk", "Oxanium", system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .atmosphere::before,
+    .atmosphere::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      z-index: 1;
+    }
+
+    .atmosphere::before {
+      background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px);
+      opacity: 0.2;
+    }
+
+    .atmosphere::after {
+      background: radial-gradient(circle at 50% 50%, rgba(63, 242, 255, 0.18), transparent 45%);
+    }
+
+    .layout {
+      position: relative;
+      z-index: 2;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 64px 24px 96px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 0;
+      max-width: 1320px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+    }
+
+    .topline strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* TV */
+    .tv-shell {
+      position: relative;
+      padding: 18px;
+      background: linear-gradient(145deg, #0c0f1a, #080a12);
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 0 30px rgba(63, 242, 255, 0.08);
+      border: 2px solid #111729;
+    }
+
+    .tv-nameplate {
+      position: absolute;
+      top: 16px;
+      left: 18px;
+      padding: 6px 12px;
+      background: linear-gradient(90deg, rgba(63, 242, 255, 0.2), rgba(255, 79, 216, 0.2));
+      color: var(--text);
+      font-family: "Oxanium", sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-transform: uppercase;
+    }
+
+    .tv-inner {
+      border-radius: 18px;
+      padding: 14px;
+      background: linear-gradient(145deg, #0b0e19, #0a0c14);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .screen-mask {
+      position: relative;
+      border-radius: 16px;
+      background: radial-gradient(circle at 50% 50%, rgba(63, 242, 255, 0.12), rgba(12, 15, 25, 1) 55%);
+      padding: 14px;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .screen {
+      position: relative;
+      height: 620px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #020307;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.8), 0 0 40px rgba(63, 242, 255, 0.08);
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen-noise {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px);
+      opacity: 0.18;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      animation: noise 1s steps(6) infinite;
+      z-index: 1;
+    }
+
+    .screen-body {
+      position: relative;
+      z-index: 2;
+      padding: 32px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      padding-bottom: 48px;
+    }
+
+    .standby {
+      margin: auto;
+      text-align: center;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      font-family: "Oxanium", sans-serif;
+    }
+
+    .channel-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(63, 242, 255, 0.08);
+      color: var(--text);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .channel-label span {
+      color: var(--muted);
+    }
+
+    .screen-title {
+      margin: 6px 0 2px;
+      font-size: 2.2rem;
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+    }
+
+    .screen-kicker {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 0 0 12px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 6px 0 12px;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .content-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .card {
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(63, 242, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    .cta {
+      text-decoration: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--ink);
+      background: linear-gradient(120deg, var(--cyan), var(--pink));
+      box-shadow: 0 10px 25px rgba(255, 79, 216, 0.22);
+    }
+
+    .ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: none;
+    }
+
+    .tv-controls {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 6px 4px;
+      color: var(--muted);
+      font-family: "Oxanium", sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .hint-chip {
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      letter-spacing: 0.06em;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+
+    .indicator {
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      letter-spacing: 0.08em;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--cyan));
+      box-shadow: 0 0 12px var(--cyan);
+    }
+
+    body.tv-off .status-dot {
+      background: radial-gradient(circle at 30% 30%, #fff, #ff5252);
+      box-shadow: 0 0 12px #ff5252;
+    }
+
+    /* Remote */
+    .remote {
+      background: linear-gradient(145deg, #0d0f19, #0a0c14);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(255, 255, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .remote-header {
+      text-align: center;
+      font-family: "Oxanium", sans-serif;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .remote-readout {
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 1.2rem;
+      letter-spacing: 0.1em;
+      color: var(--text);
+    }
+
+    .power-btn {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 79, 216, 0.6);
+      background: linear-gradient(120deg, rgba(255, 79, 216, 0.18), rgba(255, 79, 216, 0.08));
+      color: #ffdce8;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+    }
+
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .channel-btn {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      line-height: 1.2;
+      transition: border 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+
+    .channel-btn strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .channel-btn span {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .channel-btn.active {
+      border-color: var(--cyan);
+      box-shadow: 0 0 18px rgba(63, 242, 255, 0.3);
+    }
+
+    .nav-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .nav-btn {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      transition: background 0.2s, transform 0.1s;
+      font-size: 0.9rem;
+    }
+
+    .nav-btn.up { grid-column: 2; grid-row: 1; }
+    .nav-btn.left { grid-column: 1; grid-row: 2; }
+    .nav-btn.home { grid-column: 2; grid-row: 2; background: linear-gradient(120deg, rgba(63, 242, 255, 0.16), rgba(255, 79, 216, 0.16)); }
+    .nav-btn.right { grid-column: 3; grid-row: 2; }
+    .nav-btn.down { grid-column: 2; grid-row: 3; }
+
+    .nav-btn:active,
+    .channel-btn:active,
+    .power-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Mobile */
+    .mobile-only {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .desktop-only {
+        display: none;
+      }
+
+      .mobile-only {
+        display: block;
+        padding: 26px 18px 80px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+        padding: 24px 18px;
+      }
+
+      .topline {
+        padding: 16px 18px 0;
+      }
+
+      .remote {
+        position: relative;
+        top: 0;
+      }
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 6, 12, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 30;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(720px, 100%);
+      background: #0c0f1a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .modal-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .modal-nav button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      cursor: pointer;
+      letter-spacing: 0.05em;
+    }
+
+    /* Animations */
+    @keyframes noise {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+ </head>
+ <body>
+  <div class="atmosphere"></div>
+  <div class="topline">
+   <div><strong>That's Soo Buttons</strong> - Creative Director &amp; Caretaker</div>
+   <div>TV mode on desktop - Remote popups on mobile</div>
+  </div>
+  <main class="layout">
+   <section class="tv-column desktop-only" id="tv-wrapper">
+    <div class="tv-shell">
+     <div class="tv-inner">
+      <div class="screen-mask">
+       <div class="screen" id="screen">
+        <div class="screen-noise" id="screen-noise"></div>
+        <div class="screen-body" id="screen-body"></div>
+       </div>
+      </div>
+     </div>
+    <div class="tv-controls">
+     <div class="indicator" id="indicator">CH 1 - OTF Network</div>
+     <div class="hint-chip">Use remote arrows to flip pages</div>
+     <div class="status-dot" id="status-dot"></div>
+    </div>
+    </div>
+   </section>
+   <aside class="remote desktop-only" aria-label="Desktop remote">
+    <div class="remote-header">OTF REMOTE</div>
+    <div class="remote-readout" id="remote-readout">CH 1</div>
+    <button class="power-btn" id="power-btn">Power</button>
+    <button class="power-btn" id="chat-btn" style="margin-top: 8px;">Chat</button>
+    <div class="channel-grid" id="channel-grid-desktop"></div>
+    <div class="nav-pad">
+     <button class="nav-btn up" data-channel="prev">Up</button>
+     <button class="nav-btn left" data-step="prev">Previous</button>
+     <button class="nav-btn home">Home</button>
+     <button class="nav-btn right" data-step="next">Next</button>
+     <button class="nav-btn down" data-channel="next">Down</button>
+    </div>
+   </aside>
+  </main>
+  <section class="mobile-only">
+   <div class="remote" aria-label="Mobile remote">
+    <div class="remote-header">OTF REMOTE</div>
+    <div class="remote-readout" id="remote-readout-mobile">CH 1</div>
+    <button class="power-btn" id="power-btn-mobile">Power</button>
+    <button class="power-btn" id="chat-btn-mobile" style="margin-top: 8px;">Chat</button>
+    <div class="channel-grid" id="channel-grid-mobile"></div>
+   </div>
+  </section>
+  <div class="modal" id="channel-modal" role="dialog" aria-modal="true">
+   <div class="modal-card">
+    <button class="modal-close" id="modal-close" aria-label="Close">Close</button>
+    <div id="modal-body"></div>
+    <div class="modal-nav">
+     <button data-step="prev" id="modal-prev">Prev slice</button>
+     <button data-step="next" id="modal-next">Next slice</button>
+    </div>
+   </div>
+  </div>
+  <div class="chat-modal" id="chat-modal">
+   <div class="chat-header">
+    <h3>LIVE CHAT</h3>
+    <button class="chat-close" id="chat-close">Close</button>
+   </div>
+   <div class="chat-body">
+    <div id="twitch-chat-embed"></div>
+   </div>
+  </div>
+  <script>
+    const channels = [
+      {
+        id: 1,
+        name: "OTF Network",
+        short: "Community",
+        accent: "var(--cyan)",
+        slices: [
+          {
+            title: "Build with a kinder internet",
+            kicker: "A Discord community for neurodivergent and chronically ill creatives",
+            pills: ["150+ members", "Weekly coworking", "Accountability pods"],
+            body: [
+              "Safe, judgment-free rooms to ship work at your own pace.",
+              "Collaboration channels for writing, events, and world-building.",
+              "Peer support for chronic illness and neurodivergence."
+            ],
+            ctas: [
+              { label: "Join the server", href: "https://discord.gg/sMHkNZ7EVY" },
+              { label: "See what we're making", href: "https://ontheflynetwork.com", ghost: true }
+            ]
+          },
+          {
+            title: "What's inside the Network",
+            kicker: "Programming that meets you where you are",
+            pills: ["Creative jams", "Event builds", "Resource vault"],
+            body: [
+              "Monthly low-pressure jams with paired mentors.",
+              "Shared tools for story bibles, prompts, and continuity checks.",
+              "Rotating showcases where the community boosts your launch."
+            ],
+            ctas: [
+              { label: "Grab an invite", href: "https://discord.gg/sMHkNZ7EVY" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 2,
+        name: "Workshops",
+        short: "Labs",
+        accent: "var(--pink)",
+        slices: [
+          {
+            title: "Concept workshops & PDFs",
+            kicker: "DIY, storytelling, and resource drops",
+            pills: ["DIY & upcycling", "Writing prompts", "PDF vault"],
+            body: [
+              "Character & world-building PDFs, quirky questionnaires, and planet builders.",
+              "DIY and upcycling guides (tin cans, crafty chaos) plus monthly word adventures.",
+              "Downloadable resources to use in jams, streams, and community builds."
+            ],
+            ctas: [
+              { label: "Grab resources", href: "https://discord.gg/sMHkNZ7EVY" },
+              { label: "See PDF concepts", href: "https://ontheflynetwork.com/pdfs-and-documents", ghost: true }
+            ]
+          },
+          {
+            title: "Volunteer-led labs",
+            kicker: "Bring an idea, leave with momentum",
+            pills: ["Community-led", "Low pressure", "Cross-discipline"],
+            body: [
+              "Writing, photography, film/TV, audio, and DIY labs run by volunteers.",
+              "Low-pressure practice sessions, feedback loops, and co-working blocks.",
+              "Co-create tutorials, build your portfolio, and help others ship."
+            ],
+            ctas: [
+              { label: "Host a lab", href: "https://discord.gg/sMHkNZ7EVY" },
+              { label: "Idea queue", href: "https://ontheflynetwork.com/worskhops", ghost: true }
+            ]
+          }
+        ]
+      },
+      {
+        id: 3,
+        name: "Live",
+        short: "Twitch",
+        accent: "var(--amber)",
+        slices: [
+          {
+            title: "Watch Live Now",
+            kicker: "Stream embedded directly in the TV",
+            pills: ["Monthly accountability", "Gaming Mon/Wed/Thu", "Use Chat button"],
+            body: [
+              '<div id="twitch-player-container" style="width: 100%; height: 400px; border-radius: 12px; overflow: hidden; margin: 20px 0;"></div>',
+              "Monthly cozy crafts + accountability: three 1-hour sessions (morning, midday, night).",
+              "Gaming streams (cozy/horror) Mon, Wed, Thu + rotating weekends at 7-10pm CT.",
+              "Click the Chat button on the remote to open live chat and join the conversation."
+            ],
+            ctas: [
+              { label: "Follow on Twitch", href: "https://twitch.tv/thats_soo_buttons" }
+            ]
+          },
+          {
+            title: "Programming you can tap into",
+            kicker: "Recurring anchors so you know when to drop in",
+            pills: ["Morning soft starts", "Build sessions", "Debrief Fridays"],
+            body: [
+              "Cozy morning streams to ease into your workday.",
+              "Structured build blocks with timers and recaps.",
+              "Friday debriefs to plan what's next together."
+            ],
+            ctas: [
+              { label: "Notify me", href: "https://twitch.tv/thats_soo_buttons" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 4,
+        name: "Radio",
+        short: "Audio",
+        accent: "var(--cyan)",
+        slices: [
+          {
+            title: "OTF Radio",
+            kicker: "Original music, lyrics, and audio experiments",
+            pills: ["Writing room", "Soundscapes", "Behind the stems"],
+            body: [
+              "Score sketches for game worlds and collaborative events.",
+              "Spoken word and lyric labs that invite community notes.",
+              "Mix breakdowns so you can remix or learn."
+            ],
+            ctas: [
+              { label: "Listen in", href: "https://ontheflynetwork.com" }
+            ]
+          },
+          {
+            title: "Submit or collaborate",
+            kicker: "Let's build the sound of your world",
+            pills: ["Theme development", "Voiceover", "SFX capture"],
+            body: [
+              "Theme and motif ideation for your IP or event.",
+              "Voiceover passes for trailers or in-world moments.",
+              "Field recordings and SFX tailored to your scenes."
+            ],
+            ctas: [
+              { label: "Start a session", href: "mailto:buttons@ontheflynetwork.com" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    let currentChannel = 1;
+    let currentSlice = 0;
+    let poweredOn = true;
+    const screenBody = document.getElementById('screen-body');
+    const indicator = document.getElementById('indicator');
+    const remoteReadout = document.getElementById('remote-readout');
+    const remoteReadoutMobile = document.getElementById('remote-readout-mobile');
+    const modal = document.getElementById('channel-modal');
+    const modalBody = document.getElementById('modal-body');
+
+    function buildChannelButtons(targetId) {
+      const target = document.getElementById(targetId);
+      target.innerHTML = '';
+      channels.forEach((channel) => {
+        const btn = document.createElement('button');
+        btn.className = 'channel-btn';
+        btn.dataset.channel = channel.id;
+        btn.innerHTML = `<strong>CH ${channel.id} - ${channel.short}</strong><span>${channel.name}</span>`;
+        target.appendChild(btn);
+      });
+    }
+
+    function setActiveButtons(channelId) {
+      document.querySelectorAll('.channel-btn').forEach((btn) => {
+        btn.classList.toggle('active', Number(btn.dataset.channel) === channelId);
+      });
+    }
+
+    function renderSlice(channel, sliceIndex) {
+      const slice = channel.slices[sliceIndex];
+      if (!slice) return '<div class="standby">No content</div>';
+      const pills = slice.pills.map((pill) => `<span class="pill">${pill}</span>`).join('');
+      const bullets = slice.body.map((line) => `<div class="card"><span>${line}</span></div>`).join('');
+      const ctas = (slice.ctas || []).map((cta) => {
+        const classes = ['cta'];
+        if (cta.ghost) classes.push('ghost');
+        return `<a class="${classes.join(' ')}" href="${cta.href}" target="_blank" rel="noopener noreferrer">${cta.label}</a>`;
+      }).join('');
+      return `
+        <div class="channel-label" style="border-color:${channel.accent};">
+          <strong>CH ${channel.id}</strong>
+          <span>- ${channel.name}</span>
+        </div>
+        <h2 class="screen-title">${slice.title}</h2>
+        <p class="screen-kicker">${slice.kicker}</p>
+        <div class="pill-row">${pills}</div>
+        <div class="content-grid">${bullets}</div>
+        <div class="cta-row">${ctas}</div>
+      `;
+    }
+
+    function renderScreen() {
+      const channel = channels.find((c) => c.id === currentChannel);
+      if (!poweredOn) {
+        screenBody.innerHTML = '<div class="standby">Standby - TV sleeping</div>';
+        return;
+      }
+      if (!channel) return;
+      screenBody.innerHTML = renderSlice(channel, currentSlice);
+      indicator.textContent = `CH ${channel.id} - ${channel.name}`;
+      remoteReadout.textContent = `CH ${channel.id}`;
+      remoteReadoutMobile.textContent = `CH ${channel.id}`;
+      setActiveButtons(channel.id);
+    }
+
+    function setChannel(channelId) {
+      const exists = channels.some((c) => c.id === channelId);
+      if (!exists) return;
+      currentChannel = channelId;
+      currentSlice = 0;
+      renderScreen();
+    }
+
+    function stepSlice(direction) {
+      const channel = channels.find((c) => c.id === currentChannel);
+      if (!channel) return;
+      const total = channel.slices.length;
+      const delta = direction === 'next' ? 1 : -1;
+      currentSlice = (currentSlice + delta + total) % total;
+      renderScreen();
+      if (modal.classList.contains('active')) renderModal();
+    }
+
+    function togglePower() {
+      poweredOn = !poweredOn;
+      document.body.classList.toggle('tv-off', !poweredOn);
+      renderScreen();
+    }
+
+    function toggleChat() {
+      const chatModal = document.getElementById('chat-modal');
+      chatModal.classList.toggle('active');
+    }
+
+    function openModal(channelId) {
+      setChannel(channelId);
+      renderModal();
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+
+    function renderModal() {
+      const channel = channels.find((c) => c.id === currentChannel);
+      if (!channel) return;
+      modalBody.innerHTML = `
+        <div class="screen-body" style="padding: 6px; gap: 12px;">
+          ${renderSlice(channel, currentSlice)}
+        </div>
+      `;
+    }
+
+    function wireButtons() {
+      document.querySelectorAll('.channel-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const channelId = Number(btn.dataset.channel);
+          if (btn.closest('.mobile-only')) {
+            openModal(channelId);
+          } else {
+            setChannel(channelId);
+          }
+        });
+      });
+
+      document.querySelectorAll('.nav-btn').forEach((btn) => {
+        if (btn.dataset.step) {
+          btn.addEventListener('click', () => stepSlice(btn.dataset.step));
+        } else if (btn.dataset.channel) {
+          btn.addEventListener('click', () => {
+            const delta = btn.dataset.channel === 'next' ? 1 : -1;
+            const totalChannels = channels.length;
+            currentChannel = (currentChannel - 1 + delta + totalChannels) % totalChannels + 1;
+            currentSlice = 0;
+            renderScreen();
+          });
+        }
+      });
+
+      document.getElementById('power-btn').addEventListener('click', togglePower);
+      document.getElementById('power-btn-mobile').addEventListener('click', togglePower);
+      document.getElementById('chat-btn').addEventListener('click', toggleChat);
+      document.getElementById('chat-btn-mobile').addEventListener('click', toggleChat);
+      document.getElementById('chat-close').addEventListener('click', toggleChat);
+      document.getElementById('modal-close').addEventListener('click', closeModal);
+      document.getElementById('modal-prev').addEventListener('click', () => stepSlice('prev'));
+      document.getElementById('modal-next').addEventListener('click', () => stepSlice('next'));
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+    }
+
+    buildChannelButtons('channel-grid-desktop');
+    buildChannelButtons('channel-grid-mobile');
+    wireButtons();
+    renderScreen();
+
+    // Initialize Twitch embeds
+    let twitchPlayer = null;
+    let twitchChat = null;
+
+    function initTwitchEmbeds() {
+      // Player embed (loads when Live channel is viewed)
+      const playerContainer = document.getElementById('twitch-player-container');
+      if (playerContainer && !twitchPlayer) {
+        twitchPlayer = new Twitch.Player('twitch-player-container', {
+          channel: 'thats_soo_buttons',
+          parent: ['localhost', 'ontheflynetwork.com'],
+          width: '100%',
+          height: '400px',
+          muted: false
+        });
+      }
+
+      // Chat embed (loads when chat modal opens)
+      const chatContainer = document.getElementById('twitch-chat-embed');
+      if (chatContainer && !twitchChat) {
+        twitchChat = new Twitch.Embed('twitch-chat-embed', {
+          width: '100%',
+          height: '100%',
+          channel: 'thats_soo_buttons',
+          parent: ['localhost', 'ontheflynetwork.com'],
+          layout: 'chat',
+          theme: 'dark'
+        });
+      }
+    }
+
+    // Initialize on page load and when channel changes
+    setTimeout(initTwitchEmbeds, 1000);
+
+    // Re-init when Live channel is selected
+    const originalSetChannel = setChannel;
+    setChannel = function(channelId) {
+      originalSetChannel(channelId);
+      if (channelId === 3) {
+        setTimeout(initTwitchEmbeds, 500);
+      }
+    };
+  </script>
+ </body>
+</html>

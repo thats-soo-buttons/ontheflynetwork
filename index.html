@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>OTF Network - On The Fly Network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+  <script src="https://embed.twitch.tv/embed/v1.js"></script>
+  <style>
+    :root {
+      --static-dark: #0a0a0a;
+      --screen-glow: #00ff41;
+      --glitch-pink: #ff006e;
+      --glitch-cyan: #00f5ff;
+      --tube-warm: #ffaa00;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Space Mono', monospace;
+      background: var(--static-dark);
+      color: #ccc;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--glitch-cyan);
+    }
+
+    .logo {
+      font-family: 'VT323', monospace;
+      font-size: 3rem;
+      color: var(--screen-glow);
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: var(--glitch-pink);
+      margin-bottom: 10px;
+    }
+
+    .bzz-chip {
+      color: var(--glitch-cyan);
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+    }
+
+    /* Tab Navigation */
+    .tab-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 40px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 2px solid var(--glitch-cyan);
+      color: var(--glitch-cyan);
+      padding: 12px 24px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .tab-btn:hover,
+    .tab-btn.active {
+      background: var(--glitch-cyan);
+      color: var(--static-dark);
+      box-shadow: 0 0 20px var(--glitch-cyan);
+    }
+
+    /* Tab Sections */
+    .tab-section {
+      display: none;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    /* Section Boxes */
+    .section-box {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
+      border: 2px solid var(--glitch-cyan);
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.1);
+    }
+
+    .section-title {
+      font-family: 'VT323', monospace;
+      font-size: 1.5rem;
+      color: var(--screen-glow);
+      text-shadow: 0 0 10px var(--screen-glow);
+      margin-bottom: 15px;
+      letter-spacing: 2px;
+    }
+
+    .section-text {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #ddd;
+      margin-bottom: 15px;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      background: var(--glitch-cyan);
+      color: var(--static-dark);
+      border: none;
+      padding: 12px 24px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+      border-radius: 4px;
+      transition: 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .cta-btn:hover {
+      background: var(--glitch-pink);
+      box-shadow: 0 0 20px var(--glitch-pink);
+    }
+
+    .cta-btn.ghost {
+      background: transparent;
+      color: var(--glitch-cyan);
+      border: 1px solid var(--glitch-cyan);
+    }
+
+    .cta-btn.ghost:hover {
+      background: var(--glitch-cyan);
+      color: var(--static-dark);
+    }
+
+    /* TV Section */
+    .tv-notice {
+      background: var(--glitch-pink);
+      color: var(--static-dark);
+      padding: 15px 20px;
+      border-radius: 4px;
+      margin-bottom: 30px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .tv-container {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 40px;
+      margin-bottom: 40px;
+      align-items: stretch;
+    }
+
+    .tv-set {
+      border: 15px solid #333;
+      border-radius: 20px;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(255, 170, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tv-display {
+      position: relative;
+      background: #000;
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tv-screen {
+      width: 100%;
+      flex: 1;
+      min-height: 400px;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #222;
+      color: var(--screen-glow);
+      font-size: 1.1rem;
+      text-align: center;
+      padding: 20px;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tv-screen::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(0deg, transparent 24%, rgba(255, 0, 0, 0.05) 25%, rgba(255, 0, 0, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 0, 0, 0.05) 75%, rgba(255, 0, 0, 0.05) 76%, transparent 77%, transparent);
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .tv-screen > * {
+      position: relative;
+      z-index: 3;
+    }
+
+    .tv-bezel {
+      background: linear-gradient(135deg, #222, #111);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 3px solid #444;
+    }
+
+    .tv-brand {
+      font-family: 'VT323', monospace;
+      color: var(--glitch-pink);
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .tv-lights {
+      display: flex;
+      gap: 15px;
+    }
+
+    .power-light,
+    .channel-light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #333;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    .power-light.active {
+      background: var(--screen-glow);
+      box-shadow: 0 0 10px var(--screen-glow), inset 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    .channel-light.active {
+      background: var(--glitch-cyan);
+      box-shadow: 0 0 8px var(--glitch-cyan), inset 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    .remote-control {
+      background: linear-gradient(145deg, #3a3a3a, #1a1a1a);
+      border: 3px solid #2a2a2a;
+      border-radius: 15px;
+      padding: 25px 15px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+      max-width: 200px;
+    }
+
+    .remote-label {
+      font-family: 'VT323', monospace;
+      color: var(--glitch-pink);
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px var(--glitch-pink);
+      width: 100%;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #444;
+    }
+
+    .remote-btn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(145deg, #555, #333);
+      border: 2px solid #666;
+      color: var(--screen-glow);
+      cursor: pointer;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .remote-btn:hover {
+      background: var(--glitch-cyan);
+      color: #000;
+      box-shadow: 0 0 15px var(--glitch-cyan), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .remote-btn:active {
+      transform: scale(0.98);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .power-btn {
+      background: linear-gradient(145deg, #ff006e, #c20055);
+      border-color: #ff006e;
+      color: #fff;
+      width: 80%;
+      padding: 12px;
+      font-size: 0.9rem;
+      margin: 10px auto;
+    }
+
+    .power-btn:hover {
+      background: linear-gradient(145deg, #ff3380, #ff006e);
+      box-shadow: 0 0 20px var(--glitch-pink), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .remote-display {
+      width: 90%;
+      background: #111;
+      border: 2px solid var(--glitch-cyan);
+      color: var(--glitch-cyan);
+      text-align: center;
+      padding: 8px;
+      font-family: 'VT323', monospace;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 4px;
+      text-shadow: 0 0 8px var(--glitch-cyan);
+      margin: 10px 0;
+    }
+
+    .dpad-section {
+      width: 100%;
+      padding: 10px 0;
+    }
+
+    .dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      max-width: 140px;
+      margin: 0 auto;
+    }
+
+    .dpad-btn {
+      background: linear-gradient(145deg, #555, #333);
+      border: 2px solid #666;
+      color: var(--screen-glow);
+      padding: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    .dpad-btn:hover {
+      background: var(--glitch-cyan);
+      color: #000;
+      box-shadow: 0 0 12px var(--glitch-cyan);
+    }
+
+    .dpad-btn.up {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .dpad-btn.left {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .dpad-btn.center {
+      grid-column: 2;
+      grid-row: 2;
+      background: linear-gradient(145deg, #666, #444);
+      font-size: 0.75rem;
+    }
+
+    .dpad-btn.right {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .dpad-btn.down {
+      grid-column: 2;
+      grid-row: 3;
+    }
+
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .channel-btn {
+      background: linear-gradient(145deg, #444, #222);
+      border: 2px solid #555;
+      color: var(--screen-glow);
+      padding: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .channel-btn:hover {
+      background: var(--glitch-cyan);
+      color: #000;
+      box-shadow: 0 0 15px var(--glitch-cyan);
+      border-color: var(--glitch-cyan);
+    }
+
+    .channel-btn.active {
+      background: var(--glitch-pink);
+      color: #fff;
+      box-shadow: 0 0 15px var(--glitch-pink);
+      border-color: var(--glitch-pink);
+    }
+
+    .volume-section {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+    }
+
+    .volume-section .remote-btn {
+      flex: 0 0 50px;
+      padding: 8px 4px;
+      font-size: 0.75rem;
+    }
+
+    .volume-display {
+      flex: 1;
+      background: #111;
+      border: 2px solid var(--tube-warm);
+      color: var(--tube-warm);
+      text-align: center;
+      padding: 6px;
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 4px;
+      text-shadow: 0 0 6px var(--tube-warm);
+    }
+
+    .function-btns {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+    }
+
+    .function-btns .remote-btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 0.75rem;
+    }
+
+    .media-controls {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      padding: 10px 0;
+      border-top: 2px solid #444;
+      border-bottom: 2px solid #444;
+    }
+
+    .media-btn {
+      flex: 1;
+      font-size: 1.2rem;
+      padding: 12px;
+      background: linear-gradient(145deg, #444, #222);
+    }
+
+    .media-btn:hover {
+      background: var(--tube-warm);
+      color: #000;
+      box-shadow: 0 0 15px var(--tube-warm);
+    }
+
+    .game-section {
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.05), rgba(255, 0, 110, 0.05));
+      border: 2px solid var(--glitch-cyan);
+      border-radius: 8px;
+      padding: 30px;
+      margin-top: 40px;
+    }
+
+    .game-section h3 {
+      color: var(--screen-glow);
+      font-family: 'VT323', monospace;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px var(--screen-glow);
+    }
+
+    .game-tile {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, rgba(0, 245, 255, 0.1), rgba(255, 0, 110, 0.1));
+      border: 2px solid var(--glitch-cyan);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.3s;
+      font-size: 2rem;
+    }
+
+    .game-tile:hover {
+      background: var(--glitch-cyan);
+      color: var(--static-dark);
+      box-shadow: 0 0 20px var(--glitch-cyan);
+    }
+
+    /* Sticky Notes */
+    .sticky-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--glitch-pink);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 20px;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 999;
+      transition: 0.3s;
+      box-shadow: 0 0 20px var(--glitch-pink);
+    }
+
+    .sticky-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px var(--glitch-pink);
+    }
+
+    .sticky-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sticky-modal.active {
+      display: flex;
+    }
+
+    .sticky-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.75);
+    }
+
+    .sticky-card {
+      position: relative;
+      width: 90%;
+      max-width: 500px;
+      background: #0a0a0a;
+      border: 2px solid var(--glitch-cyan);
+      box-shadow: 0 0 24px rgba(0, 245, 255, 0.25);
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 10002;
+    }
+
+    .sticky-card h3 {
+      color: var(--glitch-cyan);
+      margin-bottom: 10px;
+    }
+
+    .sticky-card p {
+      color: #bbb;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    .sticky-row {
+      margin-bottom: 15px;
+    }
+
+    .sticky-row label {
+      display: block;
+      font-weight: 700;
+      color: var(--tube-warm);
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .sticky-row input,
+    .sticky-row textarea,
+    .sticky-row select {
+      width: 100%;
+      background: #111;
+      color: #ccc;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+    }
+
+    .sticky-row textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .sticky-counter {
+      text-align: right;
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .sticky-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .sticky-close,
+    .sticky-submit {
+      flex: 1;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: 0.3s;
+      border: none;
+      font-weight: 700;
+    }
+
+    .sticky-close {
+      background: #222;
+      color: #ddd;
+      border: 1px solid #555;
+    }
+
+    .sticky-close:hover {
+      background: #333;
+    }
+
+    .sticky-submit {
+      background: var(--glitch-cyan);
+      color: #000;
+    }
+
+    .sticky-submit:hover {
+      background: var(--glitch-pink);
+      color: #fff;
+    }
+
+    .sticky-status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--screen-glow);
+      text-align: center;
+    }
+
+    /* BZZ Animation */
+    #bzzAnimation, #rotatingSkill {
+      transition: opacity 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .logo {
+        font-size: 2rem;
+      }
+
+      .container {
+        padding: 20px 15px;
+      }
+
+      .tv-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-btn {
+        bottom: 20px;
+        right: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="logo">ON THE FLY NETWORK</h1>
+      <p class="tagline">Where your passion finds its wings</p>
+      <div class="bzz-chip">/// BZZ BZZ ///</div>
+    </header>
+
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="mission">Mission & Community</button>
+      <button class="tab-btn" data-tab="tv">OTF TV</button>
+      <button class="tab-btn" data-tab="support">Support</button>
+    </nav>
+
+    <!-- MISSION TAB -->
+    <div id="section-mission" class="tab-section active">
+      <div class="grid">
+        <section class="section-box">
+          <h2 class="section-title">The Signal</h2>
+          <p class="section-text">
+            Are you a creative tired of going it alone? On The Fly Network is your haven for neurodivergent and chronically ill artists to build at their own pace.
+          </p>
+          <p class="section-text">
+            We keep resources 100% free—coworking, workshops, sounding boards, and materials.
+          </p>
+          <button class="cta-btn" onclick="window.open('https://discord.gg/sMHkNZ7EVY')">JOIN DISCORD</button>
+        </section>
+
+        <section class="section-box">
+          <h2 class="section-title">Tune In</h2>
+          <p class="section-text">
+            For community members: connect, get feedback, and ship together. Weekly coworking, accountability pods, and jams.
+          </p>
+          <p class="section-text">
+            Writing • Photography • Film/TV • Audio • DIY — free guides and templates to move your projects forward.
+          </p>
+          <a class="cta-btn ghost" href="otfservices.html">Learn More</a>
+        </section>
+      </div>
+
+      <div class="grid">
+        <section class="section-box">
+          <h2 class="section-title">Volunteer With Us</h2>
+          <p class="section-text">
+            Share your expertise, mentor peers, and lead workshops across writing, photography, film/TV, audio, and DIY.
+          </p>
+          <p class="section-text">
+            Co-create OTF TV segments and build toward future paid staff roles.
+          </p>
+          <button class="cta-btn ghost" onclick="window.open('https://discord.gg/sMHkNZ7EVY')">VOLUNTEER</button>
+        </section>
+
+        <section class="section-box">
+          <h2 class="section-title">Live Streams</h2>
+          <p class="section-text">
+            <strong>Accountability/Hang Out Sessions</strong>
+          </p>
+          <p class="section-text">
+            <strong>9-10 am • 2-3 pm • 7-8 pm Central</strong><br>
+            3rd Sunday of Every Month<br>
+            Through TWITCH<br>
+            <strong>@thats_soo_buttons</strong>
+          </p>
+          <button class="cta-btn" onclick="window.open('https://twitch.tv/thats_soo_buttons')">WATCH TWITCH</button>
+        </section>
+      </div>
+    </div>
+
+    <!-- OTF TV TAB -->
+    <div id="section-tv" class="tab-section">
+      <div class="tv-notice">
+        <strong>Welcome to OTF TV!</strong> Your interactive entertainment network.
+      </div>
+
+      <div class="tv-container">
+        <!-- TV SET -->
+        <div class="tv-set">
+          <div class="tv-display">
+            <div class="tv-screen" id="tvScreen">
+              <div id="tvPowerOff" style="text-align: center; margin-top: 100px; font-size: 1.5rem;">POWER OFF</div>
+              <div id="tvContent" style="display: none;"></div>
+            </div>
+          </div>
+          <div class="tv-bezel">
+            <div class="tv-brand">OTF</div>
+            <div class="tv-lights">
+              <div class="power-light" id="powerLight"></div>
+              <div class="channel-light" id="channelLight"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REMOTE CONTROL -->
+        <div class="remote-control">
+          <div class="remote-label">🎮 OTF REMOTE</div>
+          
+          <!-- Power Button -->
+          <button class="remote-btn power-btn" onclick="togglePower()" title="Power">PWR</button>
+          
+          <!-- Channel Display -->
+          <div class="remote-display" id="remoteDisplay">CH: --</div>
+          
+          <!-- D-Pad (Channel Navigation) -->
+          <div class="dpad-section">
+            <div class="dpad">
+              <button class="dpad-btn up" onclick="channelUp()" title="Channel Up">▲</button>
+              <button class="dpad-btn left" onclick="prevChannel()" title="Previous">◄</button>
+              <button class="dpad-btn center" onclick="toggleInfo()">INFO</button>
+              <button class="dpad-btn right" onclick="nextChannel()" title="Next">►</button>
+              <button class="dpad-btn down" onclick="channelDown()" title="Channel Down">▼</button>
+            </div>
+          </div>
+
+          <!-- Quick Channels -->
+          <div class="channel-grid">
+            <button class="channel-btn" onclick="setChannel(1)">1</button>
+            <button class="channel-btn" onclick="setChannel(2)">2</button>
+            <button class="channel-btn" onclick="setChannel(3)">3</button>
+            <button class="channel-btn" onclick="setChannel(4)">4</button>
+            <button class="channel-btn" onclick="setChannel(5)">5</button>
+            <button class="channel-btn" onclick="setChannel(6)">6</button>
+          </div>
+
+          <!-- Volume Controls -->
+          <div class="volume-section">
+            <button class="remote-btn" onclick="volumeDown()">VOL-</button>
+            <div class="volume-display" id="volumeDisplay">50</div>
+            <button class="remote-btn" onclick="volumeUp()">VOL+</button>
+          </div>
+
+          <!-- Media Controls (Music Channel) -->
+          <div class="media-controls">
+            <button class="remote-btn media-btn" onclick="rewindSong()" title="Previous Song">⏪</button>
+            <button class="remote-btn media-btn" onclick="fastForwardSong()" title="Next Song">⏩</button>
+          </div>
+
+          <!-- Function Buttons -->
+          <div class="function-btns">
+            <button class="remote-btn" onclick="toggleMute()" id="muteBtn">MUTE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUPPORT TAB -->
+    <div id="section-support" class="tab-section">
+      <section class="section-box">
+        <h2 class="section-title">Supporting OTF</h2>
+        <p class="section-text">
+          OTF Network is building a movement where neurodivergent and chronically ill creatives aren't just surviving—they're thriving. We're committed to creating <strong>living-wage positions</strong> around your passions and specialties.
+        </p>
+      </section>
+
+      <div class="grid">
+        <section class="section-box">
+          <h2 class="section-title">Ko-fi Support</h2>
+          <p class="section-text">
+            <strong>Preferred method:</strong> Support the Network through Ko-fi:
+          </p>
+          <ul style="margin-left: 20px; color: #ddd; line-height: 1.8;">
+            <li>Monthly subscriptions</li>
+            <li>Digital products</li>
+            <li>One-time donations</li>
+            <li><strong>Book services & commissions</strong></li>
+          </ul>
+          <button class="cta-btn" onclick="window.open('https://ko-fi.com/thatssoobuttons')">VISIT KO-FI</button>
+        </section>
+
+        <section class="section-box">
+          <h2 class="section-title">Twitch Channel</h2>
+          <p class="section-text">
+            <strong>Preferred method:</strong> Support us on Twitch with subscriptions and follows. Subscribe to unlock exclusive content!
+          </p>
+          <button class="cta-btn" onclick="window.open('https://www.twitch.tv/thats_soo_buttons')">VISIT TWITCH</button>
+        </section>
+      </div>
+
+      <div class="grid">
+        <section class="section-box">
+          <h2 class="section-title">TikTok Subscriptions</h2>
+          <p class="section-text">
+            If you mainly live on TikTok, you can subscribe there for convenience. Support goes directly to OTF!
+          </p>
+          <button class="cta-btn" onclick="window.open('https://www.tiktok.com/@thatssoobuttons')">VISIT TIKTOK</button>
+        </section>
+
+        <section class="section-box">
+          <h2 class="section-title">Instagram Subscriptions</h2>
+          <p class="section-text">
+            Primarily on Instagram? You can subscribe there too. Every platform helps us build living-wage creative positions!
+          </p>
+          <button class="cta-btn" onclick="window.open('https://www.instagram.com/thatssoobuttons')">VISIT INSTAGRAM</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Notes Button & Modal -->
+  <button class="sticky-btn" onclick="openStickyModal()">Leave a Note</button>
+
+  <div id="stickyModal" class="sticky-modal">
+    <div class="sticky-backdrop" onclick="closeStickyModal()"></div>
+    <div class="sticky-card">
+      <h3>Leave a Sticky Note</h3>
+      <p>Quick feedback to the team. Keep it brief (≤ 300 chars).</p>
+
+      <div class="sticky-row">
+        <label for="stickyNameType">Identity</label>
+        <select id="stickyNameType" onchange="updateNameType()">
+          <option value="discord">Discord Name</option>
+          <option value="unattainable">Unattainable</option>
+        </select>
+      </div>
+
+      <div id="stickyDiscordRow" class="sticky-row">
+        <label for="stickyDiscord">Discord Name</label>
+        <input id="stickyDiscord" type="text" placeholder="e.g., user#1234" maxlength="64" />
+      </div>
+
+      <div id="stickyNickRow" class="sticky-row" style="display: none;">
+        <label for="stickyNick">Nickname</label>
+        <input id="stickyNick" type="text" placeholder="e.g., A chill creative" maxlength="64" />
+      </div>
+
+      <div class="sticky-row">
+        <label for="stickyMessage">Message</label>
+        <textarea id="stickyMessage" maxlength="300" placeholder="Your message..." oninput="updateCharCount()"></textarea>
+        <div class="sticky-counter"><span id="charCount">0</span> / 300</div>
+      </div>
+
+      <div class="sticky-actions">
+        <button class="sticky-close" onclick="closeStickyModal()">Cancel</button>
+        <button class="sticky-submit" onclick="submitStickyNote()">Send</button>
+      </div>
+      <div class="sticky-status" id="stickyStatus"></div>
+    </div>
+  </div>
+
+  <script>
+    // Tab functionality
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+        
+        btn.classList.add('active');
+        document.getElementById(`section-${tab}`).classList.add('active');
+      });
+    });
+
+    // TV System State
+    let tvState = {
+      power: false,
+      currentChannel: 0,
+      volume: 50,
+      muted: false,
+      showInfo: false
+    };
+
+    const tvChannels = [
+      { 
+        name: 'BZZ BZZ', 
+        description: 'OTF Network TV', 
+        content: `
+          <div id="bzzAnimation" style="text-align: center; font-size: 1.8rem; font-weight: 700; animation: fadeInOut 3s infinite;"></div>
+          <div style="margin-top: 20px;">
+            <iframe 
+              width="100%" 
+              height="250" 
+              src="https://www.youtube-nocookie.com/embed/7TkW5_KkJgI?rel=0" 
+              title="YouTube video player" 
+              frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              referrerpolicy="strict-origin-when-cross-origin" 
+              allowfullscreen
+              style="border: 2px solid var(--glitch-cyan); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);">
+            </iframe>
+            <p style="margin-top: 10px; font-size: 0.8rem; opacity: 0.7; text-align: center;">
+              If the video doesn’t load, <a href="https://youtu.be/7TkW5_KkJgI" target="_blank" style="color: var(--glitch-cyan);">watch on YouTube</a>.
+            </p>
+          </div>
+          <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 15px;">Press INFO on remote to learn how your skills fit into OTF</p>
+        `,
+        animation: true,
+        messages: ["BZZ BZZ", "You're WATCHING", "ON THE FLY NETWORK TELEVISION", "VOLUNTEER TODAY", "BECOME PAID STAFF IN THE FUTURE"],
+        infoContent: `
+          <div style="text-align: left; font-size: 0.95rem; line-height: 1.6; max-height: 400px; overflow-y: auto; padding: 10px;">
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 1.8rem;">
+              <span id="rotatingSkill" style="color: var(--glitch-pink); font-weight: 700;">Art</span>
+              <span style="color: var(--glitch-cyan); font-weight: 700;"> On The Fly</span>
+            </h2>
+            <h3 style="color: var(--glitch-cyan); margin-bottom: 15px; text-align: center;">How Your Skills Fit Into OTF</h3>
+            
+            <div style="margin-bottom: 20px;">
+              <h4 style="color: var(--glitch-pink); margin-bottom: 8px;">🧶 Crocheting & Crafts</h4>
+              <p>Your hyperfixation is crocheting? We'll utilize your work for stop-motion animation, desktop wallpapers, and physical sales. Host crochet workshops—screen capture them for our 24/7 livestream content. Your creations become backgrounds in shorts and ad breaks.</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <h4 style="color: var(--glitch-pink); margin-bottom: 8px;">🎧 Audio Engineering & Editing</h4>
+              <p>Walk everyone through proper audio equipment setup, help edit podcasts, and hunt down used gear for workers at low-to-free costs. Talk shop with community members and film tutorials for OTF TV.</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <h4 style="color: var(--glitch-pink); margin-bottom: 8px;">✍️ Writing</h4>
+              <p>Your brain scatters between real, fantasy, horror—all over the place? That's okay. We help guide your focus on specific projects while letting you pause to capture random ideas. Run Discord chat sessions with writing prompts, review participant show-and-tell, create word searches and crosswords as thesauruses and dictionaries. Help write dialogue for podcasts, skits, and ads.</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <h4 style="color: var(--glitch-pink); margin-bottom: 8px;">📷 Art & Photography</h4>
+              <p>Photography passion but you cycle into painting or makeup? Take pictures for writers to use as prompts. Get featured on OTF TV's Gallery Showcase. Share your unique photographer mindset tips—you see beyond what's in front of you. Guide community members through visual storytelling.</p>
+            </div>
+
+            <div style="border-top: 2px solid var(--glitch-cyan); padding-top: 20px; margin-top: 25px; opacity: 0.9;">
+              <p style="font-size: 0.95rem; line-height: 1.7;"><strong>Important:</strong> The examples above are just that—examples. Your actual work and contributions may look completely different, and that's perfectly okay! We also need Coders to build and maintain the website, Social Media Gurus to create promotional content and engage our audience, and the list goes on and on. Whatever your specialty or hyperfixation, there's a place for you at OTF Network.</p>
+            </div>
+
+            <p style="text-align: center; margin-top: 20px; font-size: 0.85rem; opacity: 0.7;">Press INFO again to return</p>
+          </div>
+        `
+      },
+      { 
+        name: 'MUSIC', 
+        description: 'Music Videos', 
+        content: '<h3>🎵 MUSIC CHANNEL</h3><p>Music videos coming soon!</p><p style="font-size: 0.9rem; opacity: 0.7;">Use ◄ ► on the remote to change songs</p>',
+        hasNavigation: true
+      },
+      { 
+        name: 'SPOTLIGHT', 
+        description: 'Featured Creator', 
+        content: '<h3>✨ SPOTLIGHT</h3><h2 style="color: var(--glitch-pink); margin: 20px 0; font-size: 1.6rem;">YOUR NAME COULD BE HERE</h2><p>We feature one volunteer/staff or donator\'s work and services here. It\'s a great way to drum up more business.</p>'
+      },
+      { 
+        name: 'BUTTONS', 
+        description: 'That\'s Soo Buttons', 
+        content: '<div id="buttonsChannel"></div>',
+        hasNavigation: true,
+        slides: [
+          '<div style="text-align: center;"><div style="font-size: 3rem; margin: 20px 0;">🔘🔘🔘</div><h2 style="color: var(--glitch-cyan); font-size: 2rem; margin: 10px 0;">That\'s Soo Buttons</h2><p style="opacity: 0.8;">Use ◄ ► to navigate</p></div>',
+          '<div><h3 style="color: var(--glitch-pink);">Games I Play</h3><ul style="font-size: 1.1rem; line-height: 2;"><li>Palia</li><li>Phasmophobia</li><li>TCG Player</li><li>DreamLight Valley</li><li>Tiny Glade</li></ul></div>',
+          '<div style="text-align: center;"><h3 style="color: var(--screen-glow); margin-bottom: 20px;">Enter The Simulation</h3><button class="cta-btn" onclick="window.open(\'https://thatssoobuttons.com\', \'_blank\')" style="font-size: 1.2rem;">VISIT THATSSOOBUTTONS.COM</button></div>'
+        ],
+        currentSlide: 0
+      },
+      { name: 'COMMUNITY', description: 'Chat & Connect', content: '<h3>💬 COMMUNITY</h3><p>Connect with other creatives in real time. Join our Discord for live discussions!</p><button class="cta-btn" onclick="window.open(\'https://discord.gg/sMHkNZ7EVY\', \'_blank\')" style="margin-top: 15px;">JOIN DISCORD</button>' },
+      { name: 'LIVE', description: 'Live Streams', content: '<h3>📺 LIVE CHANNEL</h3><p><strong>Accountability Sessions</strong><br>9-10 am • 2-3 pm • 7-8 pm Central<br>3rd Sunday of Every Month</p><button class="cta-btn" onclick="window.open(\'https://twitch.tv/thats_soo_buttons\', \'_blank\')" style="margin-top: 15px;">WATCH ON TWITCH</button>' }
+    ];
+
+    let bzzAnimationInterval = null;
+    let bzzMessageIndex = 0;
+    let playedStaticOnChannel = false;
+    let lastChannelIndex = null;
+    let audioCtx = null;
+
+    function playStaticWhoosh() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+
+        // White noise (static)
+        const duration = 1.6;
+        const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0.0001, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.25, now + 0.1);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        // Whoosh sweep (tunnel effect)
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(900, now);
+        osc.frequency.exponentialRampToValueAtTime(60, now + 1.2);
+
+        const oscGain = audioCtx.createGain();
+        oscGain.gain.setValueAtTime(0.0001, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.18, now + 0.15);
+        oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.3);
+
+        noise.connect(noiseGain).connect(audioCtx.destination);
+        osc.connect(oscGain).connect(audioCtx.destination);
+
+        noise.start(now);
+        noise.stop(now + duration);
+        osc.start(now);
+        osc.stop(now + 1.35);
+      } catch (e) {
+        // Audio may be blocked until user interacts
+      }
+    }
+
+    function updateTV() {
+      const screen = document.getElementById('tvScreen');
+      const powerLight = document.getElementById('powerLight');
+      const channelLight = document.getElementById('channelLight');
+      const remoteDisplay = document.getElementById('remoteDisplay');
+      const tvContent = document.getElementById('tvContent');
+      const tvPowerOff = document.getElementById('tvPowerOff');
+
+      // Clear any existing animations
+      if (bzzAnimationInterval) {
+        clearInterval(bzzAnimationInterval);
+        bzzAnimationInterval = null;
+      }
+
+      if (tvState.power) {
+        powerLight.classList.add('active');
+        channelLight.classList.add('active');
+        tvPowerOff.style.display = 'none';
+        tvContent.style.display = 'block';
+
+        const ch = tvChannels[tvState.currentChannel];
+
+        if (tvState.currentChannel !== lastChannelIndex) {
+          playedStaticOnChannel = false;
+          lastChannelIndex = tvState.currentChannel;
+        }
+        
+        // Handle info view if active and channel has infoContent
+        if (tvState.showInfo && ch.infoContent) {
+          tvContent.innerHTML = `<div>${ch.infoContent}</div>`;
+          
+          // Start rotating skill words animation
+          const skills = ['Art', 'Crafts', 'Music', 'Engineering', 'TV/Film', 'Podcasting', 'Teaching', 'Entertainment', 'Marketing', 'Community', 'Gaming', 'Writing', 'Photography', 'Animation', 'Streaming', 'Design'];
+          let skillIndex = 0;
+          const skillElement = document.getElementById('rotatingSkill');
+          if (skillElement) {
+            bzzAnimationInterval = setInterval(() => {
+              skillIndex = (skillIndex + 1) % skills.length;
+              skillElement.style.opacity = '0';
+              setTimeout(() => {
+                skillElement.textContent = skills[skillIndex];
+                skillElement.style.opacity = '1';
+              }, 300);
+            }, 2500);
+          }
+        }
+        // Handle channels with slides (like Buttons channel)
+        else if (ch.slides) {
+          const slide = ch.slides[ch.currentSlide || 0];
+          tvContent.innerHTML = `<div>${slide}</div>`;
+        } else {
+          tvContent.innerHTML = `<div>${ch.content}<p style="margin-top: 15px; font-size: 0.9rem; opacity: 0.7;">${ch.description}</p></div>`;
+        }
+
+        // Start animation for Channel 1 (BZZ BZZ) - only if not showing info
+        if (ch.animation && ch.messages && !tvState.showInfo) {
+          bzzMessageIndex = 0;
+          const animElement = document.getElementById('bzzAnimation');
+          if (animElement) {
+            animElement.textContent = ch.messages[bzzMessageIndex];
+            bzzAnimationInterval = setInterval(() => {
+              bzzMessageIndex = (bzzMessageIndex + 1) % ch.messages.length;
+              animElement.style.opacity = '0';
+              setTimeout(() => {
+                animElement.textContent = ch.messages[bzzMessageIndex];
+                animElement.style.opacity = '1';
+              }, 300);
+            }, 3000);
+          }
+        }
+
+        remoteDisplay.textContent = `CH: ${tvState.currentChannel + 1}`;
+
+        if (ch.name === 'BZZ BZZ' && !tvState.showInfo && !playedStaticOnChannel) {
+          playStaticWhoosh();
+          playedStaticOnChannel = true;
+        }
+      } else {
+        powerLight.classList.remove('active');
+        channelLight.classList.remove('active');
+        tvPowerOff.style.display = 'block';
+        tvContent.style.display = 'none';
+        remoteDisplay.textContent = 'CH: --';
+        playedStaticOnChannel = false;
+        lastChannelIndex = null;
+      }
+
+      // Update channel button highlights
+      document.querySelectorAll('.channel-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === tvState.currentChannel && tvState.power);
+      });
+
+      // Update volume display
+      document.getElementById('volumeDisplay').textContent = tvState.muted ? 'MUTE' : tvState.volume;
+    }
+
+    function togglePower() {
+      tvState.power = !tvState.power;
+      updateTV();
+    }
+
+    function setChannel(ch) {
+      if (!tvState.power) togglePower();
+      tvState.currentChannel = ch - 1;
+      updateTV();
+    }
+
+    function channelUp() {
+      if (!tvState.power) return;
+      tvState.currentChannel = (tvState.currentChannel + 1) % tvChannels.length;
+      updateTV();
+    }
+
+    function channelDown() {
+      if (!tvState.power) return;
+      tvState.currentChannel = (tvState.currentChannel - 1 + tvChannels.length) % tvChannels.length;
+      updateTV();
+    }
+
+    function nextChannel() {
+      if (!tvState.power) return;
+      const ch = tvChannels[tvState.currentChannel];
+      
+      // If channel has slides, navigate through slides instead of changing channels
+      if (ch.slides) {
+        ch.currentSlide = ((ch.currentSlide || 0) + 1) % ch.slides.length;
+        updateTV();
+      } else {
+        channelUp();
+      }
+    }
+
+    function prevChannel() {
+      if (!tvState.power) return;
+      const ch = tvChannels[tvState.currentChannel];
+      
+      // If channel has slides, navigate through slides instead of changing channels
+      if (ch.slides) {
+        ch.currentSlide = ((ch.currentSlide || 0) - 1 + ch.slides.length) % ch.slides.length;
+        updateTV();
+      } else {
+        channelDown();
+      }
+    }
+
+    function volumeUp() {
+      if (!tvState.power) return;
+      if (tvState.muted) tvState.muted = false;
+      tvState.volume = Math.min(100, tvState.volume + 5);
+      updateTV();
+    }
+
+    function volumeDown() {
+      if (!tvState.power) return;
+      if (tvState.muted) tvState.muted = false;
+      tvState.volume = Math.max(0, tvState.volume - 5);
+      updateTV();
+    }
+
+    function toggleMute() {
+      if (!tvState.power) return;
+      tvState.muted = !tvState.muted;
+      updateTV();
+    }
+
+    function toggleInfo() {
+      if (!tvState.power) return;
+      tvState.showInfo = !tvState.showInfo;
+      updateTV();
+    }
+
+    function selectChannel(index) {
+      setChannel(index + 1);
+    }
+
+    // Sticky Notes
+    function openStickyModal() {
+      document.getElementById('stickyModal').classList.add('active');
+    }
+
+    function closeStickyModal() {
+      document.getElementById('stickyModal').classList.remove('active');
+      document.getElementById('stickyStatus').textContent = '';
+    }
+
+    function updateNameType() {
+      const type = document.getElementById('stickyNameType').value;
+      document.getElementById('stickyDiscordRow').style.display = type === 'discord' ? 'block' : 'none';
+      document.getElementById('stickyNickRow').style.display = type === 'discord' ? 'none' : 'block';
+    }
+
+    function updateCharCount() {
+      const count = document.getElementById('stickyMessage').value.length;
+      document.getElementById('charCount').textContent = count;
+    }
+
+    function submitStickyNote() {
+      const type = document.getElementById('stickyNameType').value;
+      const message = document.getElementById('stickyMessage').value;
+      const status = document.getElementById('stickyStatus');
+
+      if (!message.trim()) {
+        status.textContent = 'Please write a message!';
+        status.style.color = 'var(--glitch-pink)';
+        return;
+      }
+
+      const name = type === 'discord' 
+        ? document.getElementById('stickyDiscord').value 
+        : document.getElementById('stickyNick').value;
+
+      status.textContent = '✓ Thanks for the note!';
+      status.style.color = 'var(--screen-glow)';
+      setTimeout(closeStickyModal, 1500);
+    }
+
+    // Initialize
+    updateTV();
+  </script>
+</body>
+</html>
