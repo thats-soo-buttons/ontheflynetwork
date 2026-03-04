@@ -792,6 +792,17 @@
       <div class="bzz-chip">/// BZZ BZZ ///</div>
     </header>
 
+    <!-- CTA Row: Ko-fi and Discord -->
+    <section id="cta-row" aria-label="Support and Join" style="max-width:900px;margin:0 auto 32px auto;display:flex;flex-wrap:wrap;gap:18px;justify-content:center;align-items:center;">
+      <a href="https://ko-fi.com/thatssoobuttons" target="_blank" style="background:#29abe0;color:#fff;padding:16px 32px;border-radius:8px;font-weight:bold;font-size:1.18em;text-decoration:none;box-shadow:0 2px 12px #0002;display:flex;align-items:center;gap:10px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="6" stroke="#fff" stroke-width="2" fill="none"/><circle cx="8" cy="12" r="3" fill="#fff"/></svg>
+        Support OTF on Ko-fi
+      </a>
+      <a href="https://discord.gg/sMHkNZ7EVY" target="_blank" style="background:#5865F2;color:#fff;padding:16px 32px;border-radius:8px;font-weight:bold;font-size:1.18em;text-decoration:none;box-shadow:0 2px 12px #0002;display:flex;align-items:center;gap:10px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="6" width="20" height="12" rx="6" stroke="#fff" stroke-width="2" fill="none"/><circle cx="8" cy="12" r="3" fill="#fff"/></svg>
+        Join the OTF Discord
+      </a>
+    </section>
     <nav class="tab-bar" role="tablist" aria-label="Primary sections">
       <button class="tab-btn active" id="tab-mission" data-tab="mission" role="tab" aria-controls="section-mission" aria-selected="true" tabindex="0">Mission & Community</button>
       <button class="tab-btn" id="tab-tv" data-tab="tv" role="tab" aria-controls="section-tv" aria-selected="false" tabindex="-1">OTF TV</button>
@@ -809,7 +820,7 @@
           <p class="section-text">
             We keep resources 100% free—coworking, workshops, sounding boards, and materials.
           </p>
-          <button class="cta-btn" onclick="openExternal('https://discord.gg/sMHkNZ7EVY')">JOIN DISCORD</button>
+          <button class="cta-btn" onclick="openExternal('https://discord.gg/sMHkNZ7EVY')">JOIN DISCORD (Shared for All Brands)</button>
         </section>
 
         <section class="section-box">
@@ -832,7 +843,7 @@
           <p class="section-text">
             Co-create OTF TV segments and build toward future paid staff roles.
           </p>
-          <button class="cta-btn ghost" onclick="openExternal('https://discord.gg/sMHkNZ7EVY')">VOLUNTEER</button>
+          <button class="cta-btn ghost" onclick="openExternal('https://discord.gg/sMHkNZ7EVY')">VOLUNTEER (Discord Shared)</button>
         </section>
 
         <section class="section-box">
@@ -985,41 +996,43 @@
   <!-- Sticky Notes Button & Modal -->
   <button class="sticky-btn" onclick="openStickyModal()">Leave a Note</button>
 
-  <div id="stickyModal" class="sticky-modal">
-    <div class="sticky-backdrop" onclick="closeStickyModal()"></div>
+  <div id="stickyModal" class="sticky-modal" role="dialog" aria-modal="true" aria-labelledby="stickyNoteTitle">
+    <div class="sticky-backdrop" onclick="closeStickyModal()" tabindex="-1" aria-hidden="true"></div>
     <div class="sticky-card">
-      <h3>Leave a Sticky Note</h3>
+      <h2 id="stickyNoteTitle">Leave a Sticky Note</h2>
       <p>Quick feedback to the team. Keep it brief (≤ 300 chars).</p>
 
-      <div class="sticky-row">
-        <label for="stickyNameType">Identity</label>
-        <select id="stickyNameType" onchange="updateNameType()">
-          <option value="discord">Discord Name</option>
-          <option value="unattainable">Unattainable</option>
-        </select>
-      </div>
+      <form onsubmit="submitStickyNote(); return false;" aria-label="Sticky Note Form">
+        <div class="sticky-row">
+          <label for="stickyNameType">Identity</label>
+          <select id="stickyNameType" onchange="updateNameType()" aria-label="Identity Type">
+            <option value="discord">Discord Name</option>
+            <option value="unattainable">Unattainable</option>
+          </select>
+        </div>
 
-      <div id="stickyDiscordRow" class="sticky-row">
-        <label for="stickyDiscord">Discord Name</label>
-        <input id="stickyDiscord" type="text" placeholder="e.g., user#1234" maxlength="64" />
-      </div>
+        <div id="stickyDiscordRow" class="sticky-row">
+          <label for="stickyDiscord">Discord Name</label>
+          <input id="stickyDiscord" type="text" placeholder="e.g., user#1234" maxlength="64" aria-label="Discord Name" />
+        </div>
 
-      <div id="stickyNickRow" class="sticky-row" style="display: none;">
-        <label for="stickyNick">Nickname</label>
-        <input id="stickyNick" type="text" placeholder="e.g., A chill creative" maxlength="64" />
-      </div>
+        <div id="stickyNickRow" class="sticky-row" style="display: none;">
+          <label for="stickyNick">Nickname</label>
+          <input id="stickyNick" type="text" placeholder="e.g., A chill creative" maxlength="64" aria-label="Nickname" />
+        </div>
 
-      <div class="sticky-row">
-        <label for="stickyMessage">Message</label>
-        <textarea id="stickyMessage" maxlength="300" placeholder="Your message..." oninput="updateCharCount()"></textarea>
-        <div class="sticky-counter"><span id="charCount">0</span> / 300</div>
-      </div>
+        <div class="sticky-row">
+          <label for="stickyMessage">Message</label>
+          <textarea id="stickyMessage" maxlength="300" placeholder="Your message..." oninput="updateCharCount()" aria-label="Message"></textarea>
+          <div class="sticky-counter"><span id="charCount">0</span> / 300</div>
+        </div>
 
-      <div class="sticky-actions">
-        <button class="sticky-close" onclick="closeStickyModal()">Cancel</button>
-        <button class="sticky-submit" onclick="submitStickyNote()">Send</button>
-      </div>
-      <div class="sticky-status" id="stickyStatus"></div>
+        <div class="sticky-actions">
+          <button type="button" class="sticky-close" onclick="closeStickyModal()">Cancel</button>
+          <button type="submit" class="sticky-submit">Send</button>
+        </div>
+        <div class="sticky-status" id="stickyStatus"></div>
+      </form>
     </div>
   </div>
 
@@ -1084,11 +1097,12 @@
               width="100%" 
               height="360" 
               src="https://www.youtube-nocookie.com/embed/7TkW5_KkJgI?rel=0" 
-              title="YouTube video player" 
+              title="OTF TV: Welcome Video (YouTube)" 
               frameborder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
               referrerpolicy="strict-origin-when-cross-origin" 
               allowfullscreen
+              aria-label="OTF TV: Welcome Video (YouTube)"
               style="height: 360px; border: 2px solid var(--glitch-cyan); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);">
             </iframe>
             <p style="margin-top: 10px; font-size: 0.8rem; opacity: 0.7; text-align: center;">
@@ -1491,5 +1505,45 @@
     // Initialize
     updateTV();
   </script>
+<footer style="width:100%;background:#111;color:#00f5ff;padding:32px 0 24px 0;margin-top:48px;text-align:center;font-family:'Space Mono',monospace;">
+  <div style="max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:32px;align-items:center;">
+    <a href="mailto:contact@ontheflynetwork.com" title="Email" style="color:#00f5ff;font-weight:bold;font-size:1.1em;text-decoration:none;">Email</a>
+    <a href="https://discord.gg/sMHkNZ7EVY" target="_blank" style="color:#00f5ff;font-weight:bold;font-size:1.1em;text-decoration:none;">Discord</a>
+    <a href="https://www.twitch.tv/thats_soo_buttons" target="_blank" style="color:#00f5ff;font-weight:bold;font-size:1.1em;text-decoration:none;">Twitch</a>
+    <a href="https://www.tiktok.com/@thatssoobuttons" target="_blank" style="color:#00f5ff;font-weight:bold;font-size:1.1em;text-decoration:none;">TikTok</a>
+    <a href="https://www.instagram.com/thatssoobuttons" target="_blank" style="color:#00f5ff;font-weight:bold;font-size:1.1em;text-decoration:none;">Instagram</a>
+  </div>
+  <div style="margin-top:18px;font-size:0.95em;color:#00f5ffa0;">&copy; 2026 On The Fly Network. All rights reserved.</div>
+<!-- Contact Modal Trigger -->
+<button id="contactBtn" style="position:fixed;bottom:32px;right:32px;z-index:10010;background:#00f5ff;color:#111;font-family:'Space Mono',monospace;font-size:1.1em;padding:12px 28px;border:none;border-radius:8px;box-shadow:0 2px 12px #0003;cursor:pointer;">Contact</button>
+
+<!-- Contact Modal -->
+<div id="contactModal" style="display:none;position:fixed;z-index:10020;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:32px 24px 24px 24px;border-radius:16px;max-width:360px;width:90vw;box-shadow:0 4px 32px #0006;position:relative;">
+    <button onclick="closeContactModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.6em;color:#111;cursor:pointer;">&times;</button>
+    <h2 style="color:#111;font-family:'Space Mono',monospace;margin-bottom:18px;">Contact</h2>
+    <form action="https://formsubmit.co/contact@ontheflynetwork.com" method="POST" style="display:flex;flex-direction:column;gap:12px;">
+      <input type="hidden" name="_subject" value="New Contact Request - OTF Network">
+      <input type="hidden" name="_captcha" value="false">
+      <label for="contact-name" style="font-weight:bold;color:#111;">Name *</label>
+      <input id="contact-name" name="name" type="text" required style="padding:8px;border-radius:4px;border:1px solid #ccc;">
+      <label for="contact-email" style="font-weight:bold;color:#111;">Email *</label>
+      <input id="contact-email" name="email" type="email" required style="padding:8px;border-radius:4px;border:1px solid #ccc;">
+      <label for="contact-message" style="font-weight:bold;color:#111;">Message *</label>
+      <textarea id="contact-message" name="message" required style="padding:8px;border-radius:4px;border:1px solid #ccc;min-height:80px;"></textarea>
+      <button type="submit" style="background:#00f5ff;color:#111;padding:10px 0;border:none;border-radius:6px;font-weight:bold;font-size:1.1em;cursor:pointer;margin-top:8px;">Send</button>
+    </form>
+  </div>
+</div>
+<script>
+  // Modal logic
+  const contactBtn = document.getElementById('contactBtn');
+  const contactModal = document.getElementById('contactModal');
+  function openContactModal() { contactModal.style.display = 'flex'; }
+  function closeContactModal() { contactModal.style.display = 'none'; }
+  contactBtn.addEventListener('click', openContactModal);
+  contactModal.addEventListener('click', function(e) { if (e.target === contactModal) closeContactModal(); });
+</script>
+</footer>
 </body>
 </html>
