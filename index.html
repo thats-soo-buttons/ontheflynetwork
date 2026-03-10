@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <script src="https://t.contentsquare.net/uxa/653cce40b94be.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description" content="On The Fly Network is a community for neurodivergent and chronically ill creatives—free resources, workshops, accountability, and volunteer-led OTF TV.">
@@ -1038,13 +1037,6 @@
   </div>
 
   <script>
-      // Pause all Web Audio API sounds when the page loses focus (tab/window switch)
-      document.addEventListener('visibilitychange', function() {
-        if (document.hidden && audioCtx && audioCtx.state === 'running') {
-          audioCtx.suspend();
-        }
-        // Optionally, resume on focus: if (!document.hidden && audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
-      });
     function openExternal(url) {
       window.open(url, '_blank', 'noopener,noreferrer');
     }
